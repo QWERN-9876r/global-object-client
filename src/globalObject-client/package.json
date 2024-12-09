@@ -1,6 +1,6 @@
 {
     "name": "global-object-client",
-    "version": "0.0.2",
+    "version": "0.0.4",
     "description": "globalObject is a network communication protocol that allows client and server to interact reactively. The essence of global objects is that changing such an object on one device changes it everywhere. This allows you to write high-level code for network communication and not to think about data transmission",
     "main": "index.ts",
     "type": "module",

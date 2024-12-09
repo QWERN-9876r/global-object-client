@@ -4,15 +4,53 @@
 
 ### client
 
+index.html
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="stylesheet" href="./src/style.css" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Global objects</title>
+    </head>
+    <body>
+        <div class="container">
+            <span class="timer"></span>
+            <button class="incrementBtn">increment</button>
+        </div>
+        <script type="module" src="/src/main.ts"></script>
+    </body>
+</html>
+```
+
+src/main.ts
+
 ```typescript
 import { GlobalObject } from 'global-object-client'
 
-GlobalObject.get<{ hello: string }>('http://0.0.0.0:3003').then((gObj) => {
-    console.log(gObj.hello)
+GlobalObject.get<{ timer: number }>('http://0.0.0.0:3003').then((gObj) => {
+    if (!GlobalObject.isGlobalObject(gObj) || !('timer' in gObj)) return
+
+    const timerSpan = document.querySelector('.timer') as HTMLSpanElement
+    const incrementBtn = document.querySelector(
+        '.incrementBtn'
+    ) as HTMLButtonElement
+
+    incrementBtn.addEventListener('click', () => gObj.timer++)
+
+    gObj.addEventListener(
+        'change',
+        () => (timerSpan.textContent = gObj.timer + '')
+    )
+    gObj.addEventListener('remove', () => (timerSpan.textContent = 'finished'))
 })
 ```
 
 ### server
+
+main.ts
 
 ```typescript
 import { GlobalObject } from 'global-object-server'
@@ -40,7 +78,14 @@ const server = createServer(app)
 // operation from outside the library or if you want to use any frameworks
 GlobalObject.config.server = server
 
-const gObj = GlobalObject.create({ hello: 'world' })
+const gObj = GlobalObject.create({ timer: 0 })
+
+setInterval(() => {
+    if (!('timer' in gObj)) return
+    gObj.timer++
+
+    if (gObj.timer >= 15) gObj.remove()
+}, 1000)
 
 GlobalObject.send(gObj, 3003)
 ```
